@@ -1,0 +1,111 @@
+# How to Run the Django WebSocket Project and Test API in Postman
+
+## 1️⃣ Setup & Run the Project
+
+### Step 1: Install Dependencies
+Ensure you have Python and virtualenv installed, then run:
+```
+pip install django channels daphne
+```
+
+### Step 2: Start the Django Server with Daphne
+```
+daphne -b 0.0.0.0 -p 8000 quiz_project.asgi:application
+```
+
+Make sure the server is running on:
+```
+ws://localhost:8000/ws/quiz/
+```
+
+---
+
+## 2️⃣ Testing WebSockets in Postman
+
+### Step 1: Open Postman and Create a WebSocket Request
+1. Open **Postman**.
+2. Click on **New Request (+ icon)** at the top.
+3. Change the request type from **HTTP** to **WebSocket Request**.
+4. Enter WebSocket URL:
+   ```
+   ws://localhost:8000/ws/quiz/
+   ```
+5. Click **Connect**.
+
+---
+
+### Step 2: Send Sample Messages
+After connecting, go to the **Messages** tab in Postman. Click **Send a message** and paste one of these JSON examples.
+
+#### ✅ Example 1: All Correct Answers
+```json
+{
+    "student_id": "1001",
+    "quiz_id": "10",
+    "answers": {
+        "q1": "A",
+        "q2": "C",
+        "q3": "B",
+        "q4": "D",
+        "q5": "A"
+    }
+}
+```
+**Expected Response:**
+```json
+{
+    "total_correct": 5,
+    "total_incorrect": 0,
+    "score_percentage": 100.0,
+    "feedback": "Excellent performance! Keep it up!",
+    "chart_data": [5, 0]
+}
+```
+
+---
+
+#### ✅ Example 2: Some Incorrect Answers
+```json
+{
+    "student_id": "1002",
+    "quiz_id": "11",
+    "answers": {
+        "q1": "D",
+        "q2": "B",
+        "q3": "C",
+        "q4": "A",
+        "q5": "D"
+    }
+}
+```
+**Expected Response:**
+```json
+{
+    "total_correct": 1,
+    "total_incorrect": 4,
+    "score_percentage": 20.0,
+    "feedback": "Needs improvement. Consider reviewing key concepts.",
+    "personalized_feedback": [
+        "Q1: Revise Mathematics - Algebra. Correct answer: A",
+        "Q2: Revise Science - Newton's Laws. Correct answer: C",
+        "Q3: Revise History - World War II. Correct answer: B",
+        "Q5: Revise English - Grammar. Correct answer: A"
+    ],
+    "chart_data": [1, 4]
+}
+```
+
+---
+
+### Step 3: Verify Response and Debug
+- If **connection fails (404 error)**, check if **Daphne is running**.
+- If **no response received**, ensure `asgi.py`, `consumers.py`, and `routing.py` are correctly configured.
+
+---
+
+## 4️⃣ Final Notes
+- Ensure **Django Channels** is properly set up.
+- Use **Daphne**, not `runserver`, for WebSockets.
+- Test with **multiple users** to check real-time functionality.
+
+🚀 Enjoy testing your Django WebSocket project! Let me know if you need help! 🤖
