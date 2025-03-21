@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Quiz</title>
+    <link rel="stylesheet" 
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background-color: #f8f9fa; }
+        .quiz-container { max-width: 600px; margin: 50px auto; padding: 20px; 
+                          border: 1px solid #ddd; background: white; border-radius: 10px; }
+        .result { margin-top: 20px; font-weight: bold; color: green; }
+        .feedback { text-align: left; margin-top: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="quiz-container">
+        <h2 class="mb-4">Live Quiz</h2>
+        <form id="quizForm">
+            <div class="mb-3">
+                <label>Q1: What is 2+2?</label>
+                <select name="q1" class="form-control">
+                    <option value="A" selected>4</option> <!-- Correct Answer -->
+                    <option value="B">5</option>
+                    <option value="C">6</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Q2: Who discovered gravity?</label>
+                <select name="q2" class="form-control">
+                    <option value="A">Einstein</option>
+                    <option value="B">Tesla</option>
+                    <option value="C" selected>Newton</option> <!-- Correct Answer -->
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Q3: When did World War II end?</label>
+                <select name="q3" class="form-control">
+                    <option value="A">1918</option>
+                    <option value="B" selected>1945</option> <!-- Correct Answer -->
+                    <option value="C">1960</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Q4: Which is the largest continent?</label>
+                <select name="q4" class="form-control">
+                    <option value="A">Africa</option>
+                    <option value="B">Europe</option>
+                    <option value="C">Australia</option>
+                    <option value="D" selected>Asia</option> <!-- Correct Answer -->
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label>Q5: Choose the correct sentence:</label>
+                <select name="q5" class="form-control">
+                    <option value="A" selected>She goes to school every day.</option> <!-- Correct Answer -->
+                    <option value="B">She go to school every day.</option>
+                    <option value="C">She going to school every day.</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+
+        <div class="result mt-3" id="quizResult"></div>
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/ws/quiz/");
+
+        socket.onopen = function () {
+            console.log("Connected to WebSocket");
+        };
+
+        socket.onmessage = function (event) {
+            const response = JSON.parse(event.data);
+
+            let feedbackHTML = `<strong>Score: ${response.score_percentage}%</strong><br> 
+                                <strong>Feedback: ${response.general_feedback}</strong>`;
+
+            if (response.personalized_feedback.length > 0) {
+                feedbackHTML += "<br><strong>Topics to Review:</strong><ul>";
+                response.personalized_feedback.forEach(feedback => {
+                    feedbackHTML += `<li>${feedback}</li>`;
+                });
+                feedbackHTML += "</ul>";
+            }
+
+            document.getElementById("quizResult").innerHTML = feedbackHTML;
+        };
+
+        document.getElementById("quizForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const answers = {};
+            new FormData(document.getElementById("quizForm")).forEach((value, key) => {
+                answers[key] = value;
+            });
+
+            socket.send(JSON.stringify({
+                student_id: "123",
+                quiz_id: "1",
+                answers: answers
+            }));
+        });
+    </script>
+
+</body>
+</html>
